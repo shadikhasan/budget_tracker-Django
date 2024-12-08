@@ -1,0 +1,87 @@
+{% extends 'budget/base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h1>Main Budget</h1>
+
+    <!-- Summary Section -->
+    <h3>Total Spent: ${{ total_spent }}</h3>
+
+    <!-- Entry Form -->
+    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addEntryModal">Add New Entry</button>
+
+    <!-- Modal for Entry Form -->
+    <div class="modal fade" id="addEntryModal" tabindex="-1" aria-labelledby="addEntryModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addEntryModalLabel">Add Entry</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        {{ form.as_p }}
+                        <!-- Display derived month -->
+                        <div class="mb-3">
+                            <label for="monthField" class="form-label">Month (Derived from Date)</label>
+                            <input type="text" id="monthField" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Entry</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Budget Table -->
+    <table class="table table-striped mt-4">
+        <thead>
+            <tr>
+                <th>Month</th>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Income</th>
+                <th>Debits</th>
+                <th>Balance</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in entries %}
+            <tr>
+                <td>{{ entry.month }}</td>
+                <td>{{ entry.date }}</td>
+                <td>{{ entry.description }}</td>
+                <td>{{ entry.category }}</td>
+                <td>${{ entry.income }}</td>
+                <td>${{ entry.debits }}</td>
+                <td>${{ entry.balance }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // Update the "month" field dynamically when the "date" field changes
+    document.addEventListener('DOMContentLoaded', () => {
+        const dateInput = document.querySelector('input[name="date"]');
+        const monthField = document.getElementById('monthField');
+
+        if (dateInput) {
+            dateInput.addEventListener('input', () => {
+                const date = new Date(dateInput.value);
+                if (!isNaN(date)) {
+                    const options = { month: 'long', year: 'numeric' };
+                    monthField.value = date.toLocaleDateString(undefined, options);
+                } else {
+                    monthField.value = '';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
